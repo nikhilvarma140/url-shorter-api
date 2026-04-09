@@ -39,7 +39,9 @@ public class SecurityConfig {
                 .requestMatchers(
                     "/api/v1/auth/**",
                     "/swagger-ui/**",
+                    "/swagger-ui.html",
                     "/api-docs/**",
+                    "/v3/api-docs/**",
                     "/h2-console/**"
                 ).permitAll()
                 .requestMatchers("/{shortCode}").permitAll()  // redirect is public
