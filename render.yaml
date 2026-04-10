@@ -1,0 +1,36 @@
+databases:
+  - name: url-shortener-db
+    plan: free
+    databaseName: urlshortener
+    user: urlshortener
+
+services:
+  - type: web
+    name: url-shortener-api
+    runtime: docker
+    plan: free
+    envVars:
+      - key: DB_HOST
+        fromDatabase:
+          name: url-shortener-db
+          property: host
+      - key: DB_PORT
+        fromDatabase:
+          name: url-shortener-db
+          property: port
+      - key: DB_NAME
+        fromDatabase:
+          name: url-shortener-db
+          property: database
+      - key: DB_USER
+        fromDatabase:
+          name: url-shortener-db
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: url-shortener-db
+          property: password
+      - key: JWT_SECRET
+        generateValue: true
+      - key: BASE_URL
+        value: https://url-shortener-api.onrender.com
