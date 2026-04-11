@@ -11,9 +11,10 @@ public record UrlStatsResponse(
     Long clickCount,
     LocalDateTime createdAt,
     LocalDateTime expiresAt,
-    boolean expired
+    boolean expired,
+    Long uniqueCount
 ) {
-    public static UrlStatsResponse from(Url url, String baseUrl) {
+    public static UrlStatsResponse from(Url url, String baseUrl,long count) {
         return new UrlStatsResponse(
             url.getShortCode(),
             baseUrl + "/" + url.getShortCode(),
@@ -21,7 +22,7 @@ public record UrlStatsResponse(
             url.getClickCount(),
             url.getCreatedAt(),
             url.getExpiresAt(),
-            url.isExpired()
+            url.isExpired(),count
         );
     }
 }

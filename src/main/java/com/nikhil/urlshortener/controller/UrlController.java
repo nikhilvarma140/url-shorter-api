@@ -6,9 +6,11 @@ import com.nikhil.urlshortener.dto.UrlStatsResponse;
 import com.nikhil.urlshortener.model.Url;
 import com.nikhil.urlshortener.model.User;
 import com.nikhil.urlshortener.repository.UserRepository;
+import com.nikhil.urlshortener.repository.VisitorRepository;
 import com.nikhil.urlshortener.service.UrlService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -28,6 +30,7 @@ public class UrlController {
 
     private final UrlService urlService;
     private final UserRepository userRepository;
+    private final VisitorRepository visitorRepository;
 
     @Value("${app.base-url}")
     private String baseUrl;
@@ -48,9 +51,11 @@ public class UrlController {
 
     @GetMapping("/{shortCode}")
     @Operation(summary = "Redirect to original URL")
-    public ResponseEntity<Void> redirect(@PathVariable String shortCode) {
+    public ResponseEntity<Void> redirect(@PathVariable String shortCode, HttpServletRequest request) {
+        String forwarded = request.getHeader("X-Forwarded-For");
+        String ip = forwarded != null ? forwarded.split(",")[0].trim() : request.getRemoteAddr();
         String longUrl = urlService.resolve(shortCode);
-        urlService.recordClick(shortCode);
+        urlService.recordClick(shortCode,ip);
 
         return ResponseEntity.status(HttpStatus.FOUND)
             .location(URI.create(longUrl))
@@ -61,7 +66,8 @@ public class UrlController {
     @Operation(summary = "Get URL click statistics")
     public ResponseEntity<UrlStatsResponse> getStats(@PathVariable String shortCode) {
         Url url = urlService.getUrlStats(shortCode);
-        return ResponseEntity.ok(UrlStatsResponse.from(url, baseUrl));
+        long count = visitorRepository.countDistinctVisitorIpByUrl(url);
+        return ResponseEntity.ok(UrlStatsResponse.from(url, baseUrl,count));
     }
 
     @GetMapping("/api/v1/urls/my")

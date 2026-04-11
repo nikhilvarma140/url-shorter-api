@@ -126,7 +126,7 @@ class UrlServiceTest {
 
         when(urlRepository.findByShortCode("abc")).thenReturn(Optional.of(url));
 
-        urlService.recordClick("abc");
+        urlService.recordClick("abc","kjo");
 
         assertEquals(6L, url.getClickCount());
         verify(urlRepository).save(url);

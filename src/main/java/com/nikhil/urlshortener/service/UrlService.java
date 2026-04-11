@@ -5,7 +5,9 @@ import com.nikhil.urlshortener.exception.UrlExpiredException;
 import com.nikhil.urlshortener.exception.UrlNotFoundException;
 import com.nikhil.urlshortener.model.Url;
 import com.nikhil.urlshortener.model.User;
+import com.nikhil.urlshortener.model.Visitor;
 import com.nikhil.urlshortener.repository.UrlRepository;
+import com.nikhil.urlshortener.repository.VisitorRepository;
 import com.nikhil.urlshortener.util.Base62Encoder;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -21,6 +23,7 @@ import java.util.Optional;
 public class UrlService {
 
     private final UrlRepository urlRepository;
+    private final VisitorRepository visitorRepository;
 
     @Transactional
     public Url createShortUrl(CreateUrlRequest request, User user) {
@@ -64,11 +67,17 @@ public class UrlService {
     }
 
     @Transactional
-    public void recordClick(String shortCode) {
+    public void recordClick(String shortCode, String ip) {
         urlRepository.findByShortCode(shortCode)
             .ifPresent(url -> {
                 url.incrementClickCount();
                 urlRepository.save(url);
+
+                Visitor visit = Visitor.builder()
+                    .url(url)
+                    .visitorIp(ip)
+                    .build();
+                visitorRepository.save(visit);
             });
     }
 
